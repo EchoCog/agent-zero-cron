@@ -1,0 +1,54 @@
+name: Codespaces Prebuild
+
+on:
+  push:
+    branches: ["main", "master"]
+    paths:
+      - ".devcontainer/**"
+      - "requirements.txt"
+      - "Dockerfile"
+      - "docker/**"
+  pull_request:
+    branches: ["main", "master"] 
+    paths:
+      - ".devcontainer/**"
+      - "requirements.txt"
+      - "Dockerfile"
+      - "docker/**"
+  workflow_dispatch:
+
+jobs:
+  prebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build devcontainer image
+        run: |
+          cd .devcontainer
+          docker build -t agent-zero-devcontainer:latest .
+
+      - name: Test devcontainer
+        run: |
+          # Test that the container can start and basic tools are available
+          docker run --rm agent-zero-devcontainer:latest python --version
+          docker run --rm agent-zero-devcontainer:latest node --version
+          docker run --rm agent-zero-devcontainer:latest git --version
+
+      - name: Validate devcontainer.json
+        run: |
+          # Validate JSON syntax
+          python -m json.tool .devcontainer/devcontainer.json > /dev/null
+          echo "✅ devcontainer.json is valid"
+
+      - name: Cache layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
