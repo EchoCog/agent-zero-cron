@@ -257,3 +257,9 @@ def create_default_config() -> InngestConfig:
         base_url=os.getenv("INNGEST_BASE_URL", "https://api.inngest.com"),
         enabled=os.getenv("INNGEST_ENABLED", "true").lower() in ("true", "1", "yes")
     )
+
+
+def get_inngest_agent_kit() -> 'InngestAgentKit':
+    """Get the Inngest Agent Kit instance."""
+    from python.helpers.inngest_agent_kit import get_inngest_agent_kit
+    return get_inngest_agent_kit(get_inngest_manager())

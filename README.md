@@ -43,6 +43,7 @@
 - **Default Tools:** Agent Zero includes tools like knowledge, webpage content, code execution, and communication.
 - **Creating Custom Tools:** Extend Agent Zero's functionality by creating your own custom tools.
 - **Instruments:** Instruments are a new type of tool that allow you to create custom functions and procedures that can be called by Agent Zero.
+- **Workflow Orchestration:** Inngest Agent Kit integration provides advanced workflow orchestration, agent state management, and multi-agent coordination capabilities.
 
 3. **Multi-agent Cooperation**
 
@@ -162,6 +163,7 @@ See [guix/README.md](./guix/README.md) for detailed Guix deployment documentatio
 | [Installation](./docs/installation.md) | Installation, setup and configuration |
 | [Usage](./docs/usage.md) | Basic and advanced usage |
 | [Architecture](./docs/architecture.md) | System design and components |
+| [Inngest Agent Kit](./docs/inngest_agent_kit.md) | Agent workflow orchestration with Inngest |
 | [Contributing](./docs/contribution.md) | How to contribute |
 | [Troubleshooting](./docs/troubleshooting.md) | Common issues and their solutions |
 
