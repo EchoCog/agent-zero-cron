@@ -1,7 +1,8 @@
 import asyncio
 import models
-from agent import AgentConfig, ModelConfig
+from agent import AgentConfig, ModelConfig, InngestConfig
 from python.helpers import dotenv, files, rfc_exchange, runtime, settings, docker, log
+from python.helpers.inngest_client import create_default_config
 
 
 def initialize():
@@ -44,6 +45,15 @@ def initialize():
         vision=current_settings["browser_model_vision"],
         kwargs=current_settings["browser_model_kwargs"],
     )
+    # Inngest configuration from environment
+    inngest_config = InngestConfig(
+        enabled=current_settings.get("inngest_enabled", False),
+        app_id=current_settings.get("inngest_app_id", "agent-zero"),
+        event_key=current_settings.get("inngest_event_key"),
+        signing_key=current_settings.get("inngest_signing_key"),
+        base_url=current_settings.get("inngest_base_url", "https://api.inngest.com")
+    )
+
     # agent configuration
     config = AgentConfig(
         chat_model=chat_llm,
@@ -54,6 +64,7 @@ def initialize():
         memory_subdir=current_settings["agent_memory_subdir"],
         knowledge_subdirs=["default", current_settings["agent_knowledge_subdir"]],
         code_exec_docker_enabled=False,
+        inngest=inngest_config,
         # code_exec_docker_name = "A0-dev",
         # code_exec_docker_image = "frdel/agent-zero-run:development",
         # code_exec_docker_ports = { "22/tcp": 55022, "80/tcp": 55080 }

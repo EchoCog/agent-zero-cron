@@ -774,6 +774,25 @@ class TaskScheduler:
 
             try:
                 self._printer.print(f"Scheduler Task '{current_task.name}' started")
+                
+                # Send Inngest event for task start (optional integration)
+                try:
+                    from python.helpers.inngest_client import get_inngest_manager
+                    inngest_manager = get_inngest_manager()
+                    if inngest_manager.is_enabled():
+                        await inngest_manager.send_event(
+                            "task/started",
+                            {
+                                "task_uuid": current_task.uuid,
+                                "task_name": current_task.name,
+                                "task_type": getattr(current_task, 'type', 'unknown'),
+                                "context_id": current_task.context_id,
+                                "started_at": datetime.now(timezone.utc).isoformat()
+                            }
+                        )
+                except Exception as e:
+                    # Don't fail task execution if Inngest event sending fails
+                    self._printer.print(f"Failed to send Inngest start event: {e}")
 
                 context = await self._get_chat_context(current_task)
 
@@ -837,6 +856,27 @@ class TaskScheduler:
                 self._printer.print(f"Scheduler Task '{current_task.name}' completed: {result}")
                 await self._persist_chat(current_task, context)
                 await current_task.on_success(result)
+                
+                # Send Inngest event for task completion (optional integration)
+                try:
+                    from python.helpers.inngest_client import get_inngest_manager
+                    inngest_manager = get_inngest_manager()
+                    if inngest_manager.is_enabled():
+                        await inngest_manager.send_event(
+                            "task/completed",
+                            {
+                                "task_uuid": current_task.uuid,
+                                "task_name": current_task.name,
+                                "task_type": getattr(current_task, 'type', 'unknown'),
+                                "context_id": current_task.context_id,
+                                "completed_at": datetime.now(timezone.utc).isoformat(),
+                                "result": result,
+                                "state": "success"
+                            }
+                        )
+                except Exception as e:
+                    # Don't fail task execution if Inngest event sending fails
+                    self._printer.print(f"Failed to send Inngest completion event: {e}")
 
                 # Explicitly verify task was updated in storage after success
                 await self._tasks.reload()
@@ -849,6 +889,27 @@ class TaskScheduler:
                 # Error
                 self._printer.print(f"Scheduler Task '{current_task.name}' failed: {e}")
                 await current_task.on_error(str(e))
+                
+                # Send Inngest event for task failure (optional integration)
+                try:
+                    from python.helpers.inngest_client import get_inngest_manager
+                    inngest_manager = get_inngest_manager()
+                    if inngest_manager.is_enabled():
+                        await inngest_manager.send_event(
+                            "task/failed",
+                            {
+                                "task_uuid": current_task.uuid,
+                                "task_name": current_task.name,
+                                "task_type": getattr(current_task, 'type', 'unknown'),
+                                "context_id": current_task.context_id,
+                                "failed_at": datetime.now(timezone.utc).isoformat(),
+                                "error": str(e),
+                                "state": "error"
+                            }
+                        )
+                except Exception as inngest_error:
+                    # Don't fail task execution if Inngest event sending fails
+                    self._printer.print(f"Failed to send Inngest failure event: {inngest_error}")
 
                 # Explicitly verify task was updated in storage after error
                 await self._tasks.reload()
