@@ -176,6 +176,15 @@ class ModelConfig:
     kwargs: dict = field(default_factory=dict)
 
 
+@dataclass 
+class InngestConfig:
+    enabled: bool = False
+    app_id: str = "agent-zero"
+    event_key: str | None = None
+    signing_key: str | None = None
+    base_url: str = "https://api.inngest.com"
+
+
 @dataclass
 class AgentConfig:
     chat_model: ModelConfig
@@ -202,6 +211,7 @@ class AgentConfig:
     code_exec_ssh_port: int = 55022
     code_exec_ssh_user: str = "root"
     code_exec_ssh_pass: str = ""
+    inngest: InngestConfig = field(default_factory=InngestConfig)
     additional: Dict[str, Any] = field(default_factory=dict)
 
 
