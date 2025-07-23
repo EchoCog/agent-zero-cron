@@ -76,7 +76,9 @@ RUN mkdir -p /home/gitpod/agent-zero-logs /home/gitpod/agent-zero-memory
 WORKDIR /workspace/agent-zero-cron
 
 # Copy entrypoint script for Gitpod
-COPY --chown=gitpod:gitpod .gitpod/ /home/gitpod/.gitpod/
+COPY --chown=gitpod:gitpod .gitpod/setup.sh /home/gitpod/.gitpod/setup.sh
+COPY --chown=gitpod:gitpod .gitpod/deploy.sh /home/gitpod/.gitpod/deploy.sh
+RUN chmod +x /home/gitpod/.gitpod/*.sh
 
 # Expose ports used by Agent Zero
 EXPOSE 50001 50080 80 8080 22
