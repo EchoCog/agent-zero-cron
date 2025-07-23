@@ -1,12 +1,47 @@
+"""
+Agent Zero Initialization Module
+
+This module provides the main initialization function for Agent Zero.
+It now uses the comprehensive InitializationSequence to ensure proper
+startup order and dependency management for all components.
+
+For backward compatibility, the initialize() function is maintained
+but now delegates to the new initialization sequence system.
+"""
+
 import asyncio
 import models
 from agent import AgentConfig, ModelConfig, InngestConfig
 from python.helpers import dotenv, files, rfc_exchange, runtime, settings, docker, log
 from python.helpers.inngest_client import create_default_config
+from python.helpers.initialization_sequence import get_initialized_agent_config, run_full_initialization
 
 
 def initialize():
+    """
+    Initialize Agent Zero with comprehensive initialization sequence.
+    
+    This function now uses the new InitializationSequence system to ensure
+    proper startup order for all components including:
+    - Environment detection (devcontainer, docker, guix)
+    - Inngest workflow orchestration (Issue #5)
+    - Agent Kit integration (Issue #6)
+    - Model configurations
+    - Task scheduling and workflow management
+    
+    Returns:
+        AgentConfig: Fully initialized agent configuration
+    """
+    return get_initialized_agent_config()
 
+
+def initialize_legacy():
+    """
+    Legacy initialization function for backward compatibility.
+    
+    This maintains the original initialization behavior for cases
+    where the new sequence is not desired or causes issues.
+    """
     current_settings = settings.get_settings()
 
     # chat model from user settings
