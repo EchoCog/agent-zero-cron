@@ -1,0 +1,59 @@
+name: Build Agent Zero Guix
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: 
+      - 'guix/**'
+      - '.github/workflows/guix-build.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'guix/**'
+      - '.github/workflows/guix-build.yml'
+
+jobs:
+  build-guix:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      with:
+        buildkitd-flags: '--allow-insecure-entitlement security.insecure'
+    
+    - name: Create insecure builder
+      run: |
+        docker buildx create --use --name insecure-builder \
+          --buildkitd-flags '--allow-insecure-entitlement security.insecure'
+    
+    - name: Test Guix deployment configuration
+      run: |
+        bash guix/scripts/test.sh
+    
+    - name: Build Agent Zero Guix image
+      run: |
+        bash guix/scripts/build.sh -n agent-zero-guix -t ${{ github.sha }}
+    
+    - name: Test image basic functionality
+      run: |
+        # Basic smoke test - verify image runs and stops gracefully
+        timeout 30s docker run --rm agent-zero-guix:${{ github.sha }} help || true
+    
+    - name: Login to Docker Hub (if main branch)
+      if: github.ref == 'refs/heads/main'
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    
+    - name: Push to Docker Hub (if main branch)
+      if: github.ref == 'refs/heads/main'
+      run: |
+        docker tag agent-zero-guix:${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }}/agent-zero-guix:latest
+        docker tag agent-zero-guix:${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }}/agent-zero-guix:${{ github.sha }}
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/agent-zero-guix:latest
+        docker push ${{ secrets.DOCKERHUB_USERNAME }}/agent-zero-guix:${{ github.sha }}

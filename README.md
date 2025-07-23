@@ -106,6 +106,29 @@ docker run -p 50001:80 frdel/agent-zero-run
 # Visit http://localhost:50001 to start
 ```
 
+### 🔧 Alternative: Guix-based Deployment (Reproducible Builds)
+
+For standardized, reproducible deployments using [GNU Guix](https://guix.gnu.org/):
+
+```bash
+# Build with Guix (requires Docker BuildX)
+bash guix/scripts/build.sh
+
+# Run the Guix-based deployment
+docker run -p 80:80 agent-zero-guix:latest
+
+# Or use docker-compose
+cd guix/ && docker-compose up
+```
+
+The Guix deployment provides:
+- **Reproducible builds** with exact dependency versions
+- **Better dependency management** using GNU Guix package manager  
+- **Portable, self-contained** distributions
+- **Standardized deployment** patterns
+
+See [guix/README.md](./guix/README.md) for detailed Guix deployment documentation.
+
 ## 🐳 Fully Dockerized, with Speech-to-Text and TTS
 
 ![Settings](docs/res/settings-page-ui.png)

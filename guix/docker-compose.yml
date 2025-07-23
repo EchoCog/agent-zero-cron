@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  agent-zero-guix:
+    build:
+      context: ..
+      dockerfile: guix/Dockerfile
+      args:
+        BRANCH: ${BRANCH:-main}
+    container_name: agent-zero-guix
+    image: agent-zero-guix:latest
+    ports:
+      - "${PORT:-50080}:80"
+      - "${SSH_PORT:-2222}:22"
+    volumes:
+      # Mount configuration if needed
+      - ./config:/a0-config:ro
+      # Mount logs for persistence
+      - agent-zero-logs:/a0/logs
+      # Mount memory for persistence
+      - agent-zero-memory:/a0/memory
+    environment:
+      - BRANCH=${BRANCH:-main}
+      - LANG=en_US.UTF-8
+    restart: unless-stopped
+    networks:
+      - agent-zero-network
+
+  # Optional: SearXNG service for search functionality
+  searxng:
+    image: searxng/searxng:latest
+    container_name: agent-zero-searxng
+    ports:
+      - "${SEARX_PORT:-8080}:8080"
+    volumes:
+      - ./config/searxng:/etc/searxng:ro
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:${SEARX_PORT:-8080}/
+    restart: unless-stopped
+    networks:
+      - agent-zero-network
+
+volumes:
+  agent-zero-logs:
+  agent-zero-memory:
+
+networks:
+  agent-zero-network:
+    driver: bridge

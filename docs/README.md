@@ -3,6 +3,7 @@
 To begin with Agent Zero, follow the links below for detailed guides on various topics:
 
 - **[Installation](installation.md):** Set up (or [update](installation.md#how-to-update-agent-zero)) Agent Zero on your system.
+- **[Guix Deployment](guix-deployment.md):** Deploy Agent Zero using GNU Guix for reproducible builds.
 - **[Usage Guide](usage.md):** Explore GUI features and usage scenarios.
 - **[Architecture Overview](architecture.md):** Understand the internal workings of the framework.
 - **[Mermaid Diagrams](mermaid-diagrams.md):** Technical architecture diagrams and visual documentation.
@@ -29,6 +30,13 @@ To begin with Agent Zero, follow the links below for detailed guides on various 
   - [Using Agent Zero on Mobile](installation.md#using-agent-zero-on-your-mobile-device)
   - [How to Update Agent Zero](installation.md#how-to-update-agent-zero)
   - [Full Binaries Installation](installation.md#in-depth-guide-for-full-binaries-installation)
+- [Guix Deployment Guide](guix-deployment.md)
+  - [Overview and Benefits](guix-deployment.md#overview)
+  - [Prerequisites and Setup](guix-deployment.md#prerequisites)
+  - [Installation and Configuration](guix-deployment.md#installation)
+  - [Usage Examples](guix-deployment.md#usage-examples)
+  - [CI/CD Integration](guix-deployment.md#cicd-integration)
+  - [Troubleshooting](guix-deployment.md#troubleshooting)
 - [Usage Guide](usage.md)
   - [Basic Operations](usage.md#basic-operations)
     - [Restart Framework](usage.md#restart-framework)

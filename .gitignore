@@ -47,3 +47,8 @@ instruments/**
 # Global rule to include .gitkeep files anywhere
 !**/.gitkeep
 agent_history.gif
+
+# Guix-specific ignores
+guix/.guix-profile/
+guix/result*
+guix/build-logs/
