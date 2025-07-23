@@ -1,0 +1,87 @@
+# Gitpod configuration for Agent Zero
+# Automates the complete Guix build & deploy process for live agent-zero environment
+
+image:
+  file: .gitpod.Dockerfile
+
+# Port configuration for Agent Zero services
+ports:
+  - name: Agent Zero Web UI
+    description: Main Agent Zero web interface
+    port: 50001
+    onOpen: open-browser
+    visibility: public
+  - name: Agent Zero Alt Port
+    description: Alternative port for Agent Zero
+    port: 50080
+    onOpen: notify
+    visibility: public
+  - name: HTTP Server
+    description: HTTP server port
+    port: 80
+    onOpen: notify
+    visibility: public
+  - name: SearXNG Search
+    description: SearXNG search service
+    port: 8080
+    onOpen: ignore
+    visibility: private
+
+# VS Code extensions for development
+vscode:
+  extensions:
+    - ms-python.python
+    - ms-python.debugpy
+    - ms-python.flake8
+    - ms-python.pylint
+    - usernamehw.errorlens
+    - ms-vscode.vscode-json
+    - redhat.vscode-yaml
+    - ms-vscode.docker
+
+# Workspace initialization tasks
+tasks:
+  - name: Deploy Agent Zero
+    init: |
+      echo "🚀 Starting Agent Zero Gitpod deployment..."
+      # Run the automated deployment script
+      ./.gitpod/deploy.sh deploy
+    command: |
+      echo "🌟 Agent Zero deployment complete!"
+      echo "Starting Agent Zero Web UI..."
+      ./.gitpod/deploy.sh start
+    openMode: tab-after
+    
+  - name: Development Terminal
+    command: |
+      echo "🖥️ Agent Zero development environment ready!"
+      echo ""
+      echo "🎯 Available commands:"
+      echo "  ./.gitpod/deploy.sh start    # Start Agent Zero"
+      echo "  ./.gitpod/deploy.sh status   # Check status"
+      echo "  python run_ui.py             # Start web UI directly"
+      echo "  python run_cli.py            # Start CLI interface"
+      echo ""
+      echo "🔗 Web UI will be available on:"
+      echo "  https://$GITPOD_WORKSPACE_URL:50001"
+      echo ""
+      bash
+    openMode: tab-after
+
+# GitHub prebuilds for faster startup
+github:
+  prebuilds:
+    master:
+      true
+    branches:
+      true
+    pullRequests:
+      true
+    pullRequestsFromForks:
+      true
+    addCheck:
+      true
+    addComment:
+      true
+    addBadge:
+      true
