@@ -542,23 +542,37 @@ def convert_out(settings: Settings) -> SettingsOutput:
     dev_fields: list[SettingsField] = []
 
     if runtime.is_development():
-        # dev_fields.append(
-        #     {
-        #         "id": "rfc_auto_docker",
-        #         "title": "RFC Auto Docker Management",
-        #         "description": "Automatically create dockerized instance of A0 for RFCs using this instance's code base and, settings and .env.",
-        #         "type": "text",
-        #         "value": settings["rfc_auto_docker"],
-        #     }
-        # )
-
         dev_fields.append(
             {
                 "id": "rfc_url",
                 "title": "RFC Destination URL",
-                "description": "URL of dockerized A0 instance for remote function calls. Do not specify port here.",
+                "description": "Configure the URL for the dockerized Agent Zero instance used for remote function calls (local instances only). Do not include the port in this URL as it will be added automatically based on the RFC HTTP port setting below.",
                 "type": "text",
                 "value": settings["rfc_url"],
+            }
+        )
+
+        dev_fields.append(
+            {
+                "id": "rfc_port_http",
+                "title": "RFC HTTP Port",
+                "description": "HTTP port number for the dockerized Agent Zero instance (local instances only). This port is used for remote function calls between instances.",
+                "type": "number",
+                "min": 1024,
+                "max": 65535,
+                "value": settings["rfc_port_http"],
+            }
+        )
+
+        dev_fields.append(
+            {
+                "id": "rfc_port_ssh",
+                "title": "RFC SSH Port",
+                "description": "SSH port number for the dockerized Agent Zero instance (local instances only). This port is used for secure shell access to the remote instance.",
+                "type": "number",
+                "min": 1024,
+                "max": 65535,
+                "value": settings["rfc_port_ssh"],
             }
         )
 
@@ -566,7 +580,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
         {
             "id": "rfc_password",
             "title": "RFC Password",
-            "description": "Password for remote function calls. Passwords must match on both instances. RFCs can not be used with empty password.",
+            "description": "Configure password for remote function calls between Agent Zero instances. Both instances must use the same password for RFC communication. Remote Function Calls cannot be used with an empty password for security reasons.",
             "type": "password",
             "value": (
                 PASSWORD_PLACEHOLDER
@@ -576,31 +590,10 @@ def convert_out(settings: Settings) -> SettingsOutput:
         }
     )
 
-    if runtime.is_development():
-        dev_fields.append(
-            {
-                "id": "rfc_port_http",
-                "title": "RFC HTTP port",
-                "description": "HTTP port for dockerized instance of A0.",
-                "type": "text",
-                "value": settings["rfc_port_http"],
-            }
-        )
-
-        dev_fields.append(
-            {
-                "id": "rfc_port_ssh",
-                "title": "RFC SSH port",
-                "description": "SSH port for dockerized instance of A0.",
-                "type": "text",
-                "value": settings["rfc_port_ssh"],
-            }
-        )
-
     dev_section: SettingsSection = {
         "id": "dev",
-        "title": "Development",
-        "description": "Parameters for A0 framework development. RFCs (remote function calls) are used to call functions on another A0 instance. You can develop and debug A0 natively on your local system while redirecting some functions to A0 instance in docker. This is crucial for development as A0 needs to run in standardized environment to support all features.",
+        "title": "Development Settings",
+        "description": "Configure development features for Agent Zero framework. RFC Parameters (available for local instances only) configure URLs and ports for remote function calls between instances. RFCs (remote function calls) enable you to develop and debug Agent Zero natively on your local system while redirecting some functions to an Agent Zero instance running in Docker. This provides a standardized environment while maintaining development flexibility.",
         "fields": dev_fields,
         "tab": "developer",
     }
@@ -715,6 +708,15 @@ def convert_in(settings: dict) -> Settings:
                         current[field["id"]] = _env_to_dict(field["value"])
                     elif field["id"].startswith("api_key_"):
                         current["api_keys"][field["id"]] = field["value"]
+                    elif field["id"] in ["rfc_port_http", "rfc_port_ssh"]:
+                        # Validate port ranges for RFC ports
+                        try:
+                            port_value = int(field["value"])
+                            if port_value < 1024 or port_value > 65535:
+                                raise ValueError(f"Port {field['id']} must be between 1024 and 65535")
+                            current[field["id"]] = port_value
+                        except (ValueError, TypeError) as e:
+                            raise ValueError(f"Invalid port value for {field['id']}: {field['value']}") from e
                     else:
                         current[field["id"]] = field["value"]
     return current
