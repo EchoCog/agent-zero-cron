@@ -91,18 +91,28 @@ async def handle_rfc(rfc_call: rfc.RFCCall):
 def _get_rfc_password() -> str:
     password = dotenv.get_dotenv_value(dotenv.KEY_RFC_PASSWORD)
     if not password:
-        raise Exception("No RFC password, cannot handle RFC calls.")
+        raise Exception("No RFC password configured. Please set the RFC Password in Development Settings to enable remote function calls between Agent Zero instances.")
     return password
 
 
 def _get_rfc_url() -> str:
     set = settings.get_settings()
     url = set["rfc_url"]
+    
+    if not url:
+        raise Exception("No RFC URL configured. Please set the RFC Destination URL in Development Settings.")
+    
     if not "://" in url:
         url = "http://"+url
     if url.endswith("/"):
         url = url[:-1]
-    url = url+":"+str(set["rfc_port_http"])
+    
+    # Validate port is set and valid
+    http_port = set["rfc_port_http"]
+    if not http_port or http_port < 1024 or http_port > 65535:
+        raise Exception(f"Invalid RFC HTTP port: {http_port}. Please configure a valid port (1024-65535) in Development Settings.")
+    
+    url = url+":"+str(http_port)
     url += "/rfc"
     return url
 
