@@ -14,7 +14,7 @@ from python.helpers.task_scheduler import (
     TaskScheduler, BaseTask, ScheduledTask, AdHocTask, PlannedTask,
     TaskState, serialize_task, deserialize_task
 )
-from python.helpers.inngest_client import InngestManager, InngestConfig, get_inngest_manager
+from python.helpers.inngest_client import InngestManager, InngestConfig, get_inngest_manager, get_inngest_agent_kit
 from python.helpers.print_style import PrintStyle
 
 
@@ -32,6 +32,7 @@ class TaskWorkflowManager:
         self.inngest_manager = get_inngest_manager(inngest_config)
         self.task_scheduler = TaskScheduler.get()
         self._printer = PrintStyle(italic=True, font_color="blue", padding=False)
+        self.agent_kit = get_inngest_agent_kit()
         self._setup_workflow_functions()
     
     @classmethod
@@ -380,11 +381,17 @@ class TaskWorkflowManager:
     
     def get_status(self) -> Dict[str, Any]:
         """Get workflow manager status."""
-        return {
+        base_status = {
             "inngest_enabled": self.inngest_manager.is_enabled(),
             "inngest_status": self.inngest_manager.get_status(),
             "workflow_functions": self.inngest_manager.list_functions()
         }
+        
+        # Add agent kit status if available
+        if hasattr(self, 'agent_kit'):
+            base_status["agent_kit_status"] = self.agent_kit.get_status()
+        
+        return base_status
 
 
 # Global helper function
