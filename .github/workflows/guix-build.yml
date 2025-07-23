@@ -57,3 +57,4 @@ jobs:
         docker tag agent-zero-guix:${{ github.sha }} ${{ secrets.DOCKERHUB_USERNAME }}/agent-zero-guix:${{ github.sha }}
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/agent-zero-guix:latest
         docker push ${{ secrets.DOCKERHUB_USERNAME }}/agent-zero-guix:${{ github.sha }}
+        
