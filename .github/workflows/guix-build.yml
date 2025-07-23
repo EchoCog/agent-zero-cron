@@ -2,7 +2,7 @@ name: Build Agent Zero Guix
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, hacking ]
     paths: 
       - 'guix/**'
       - '.github/workflows/guix-build.yml'
