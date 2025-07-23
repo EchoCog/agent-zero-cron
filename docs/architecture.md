@@ -4,12 +4,134 @@ Agent Zero is built on a flexible and modular architecture designed for extensib
 ## System Architecture
 This simplified diagram illustrates the hierarchical relationship between agents and their interaction with tools, extensions, instruments, prompts, memory and knowledge base.
 
+```mermaid
+graph TB
+    User[👤 User/Agent 0] --> A1[🤖 Agent 1]
+    User --> A2[🤖 Agent 2]
+    A1 --> A1_1[🤖 Agent 1.1]
+    A1 --> A1_2[🤖 Agent 1.2]
+    A2 --> A2_1[🤖 Agent 2.1]
+    
+    %% Shared Resources
+    subgraph SharedAssets[🗂️ Shared Assets]
+        Prompts[📝 Prompts]
+        Memory[🧠 Memory]
+        Knowledge[📚 Knowledge Base]
+        Extensions[🔧 Extensions]
+        Instruments[⚙️ Instruments]
+    end
+    
+    %% Tools
+    subgraph Tools[🛠️ Tools]
+        CodeExec[💻 Code Execution]
+        WebSearch[🔍 Web Search]
+        Browser[🌐 Browser]
+        FileOps[📁 File Operations]
+        Subordinate[👥 Call Subordinate]
+        Response[💬 Response]
+        MemTool[🗃️ Memory Tool]
+    end
+    
+    %% All agents can access shared assets and tools
+    User -.-> SharedAssets
+    A1 -.-> SharedAssets
+    A2 -.-> SharedAssets
+    A1_1 -.-> SharedAssets
+    A1_2 -.-> SharedAssets
+    A2_1 -.-> SharedAssets
+    
+    User -.-> Tools
+    A1 -.-> Tools
+    A2 -.-> Tools
+    A1_1 -.-> Tools
+    A1_2 -.-> Tools
+    A2_1 -.-> Tools
+    
+    classDef agentStyle fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef toolStyle fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef assetStyle fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    
+    class User,A1,A2,A1_1,A1_2,A2_1 agentStyle
+    class CodeExec,WebSearch,Browser,FileOps,Subordinate,Response,MemTool toolStyle
+    class Prompts,Memory,Knowledge,Extensions,Instruments assetStyle
+```
+
 ![Agent Zero Architecture](res/arch-01.svg)
 
 The user or Agent 0 is at the top of the hierarchy, delegating tasks to subordinate agents, which can further delegate to other agents. Each agent can utilize tools and access the shared assets (prompts, memory, knowledge, extensions and instruments) to perform its tasks.
 
 ## Runtime Architecture
 Agent Zero's runtime architecture is built around Docker containers:
+
+```mermaid
+flowchart TB
+    subgraph Host[🖥️ Host System]
+        Browser[🌐 Web Browser]
+        Docker[🐳 Docker Engine]
+    end
+    
+    subgraph Container[📦 Agent Zero Container]
+        subgraph WebLayer[🌐 Web Layer]
+            WebUI[🎨 Web UI]
+            FlaskAPI[⚡ Flask API]
+            BasicAuth[🔐 Basic Auth]
+        end
+        
+        subgraph CoreEngine[🧠 Core Engine]
+            AgentFramework[🤖 Agent Framework]
+            MessageLoop[🔄 Message Loop]
+            ToolExecution[🛠️ Tool Execution]
+        end
+        
+        subgraph Storage[💾 Storage Layer]
+            Memory[(🧠 Memory)]
+            Knowledge[(📚 Knowledge)]
+            Logs[(📋 Logs)]
+            TmpData[(🗂️ Temp Data)]
+        end
+        
+        subgraph Runtime[⚙️ Runtime Environment]
+            Python[🐍 Python Runtime]
+            NodeJS[🟢 Node.js Runtime]
+            ShellEnv[🖥️ Shell Environment]
+        end
+    end
+    
+    subgraph External[🌍 External Services]
+        LLMProviders[🤖 LLM Providers<br/>OpenAI, Anthropic, etc.]
+        SearchEngine[🔍 SearXNG]
+        TunnelService[🚇 Cloudflare Tunnel]
+    end
+    
+    %% Connections
+    Browser --> WebUI
+    Browser --> FlaskAPI
+    Docker --> Container
+    
+    WebUI --> AgentFramework
+    FlaskAPI --> AgentFramework
+    
+    AgentFramework --> MessageLoop
+    MessageLoop --> ToolExecution
+    ToolExecution --> Runtime
+    
+    AgentFramework -.-> Storage
+    MessageLoop -.-> Storage
+    
+    AgentFramework --> LLMProviders
+    ToolExecution --> SearchEngine
+    WebUI --> TunnelService
+    
+    classDef hostStyle fill:#fff2cc,stroke:#d6b656,stroke-width:2px
+    classDef containerStyle fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef storageStyle fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef externalStyle fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    
+    class Host hostStyle
+    class Container,WebLayer,CoreEngine,Runtime containerStyle
+    class Storage,Memory,Knowledge,Logs,TmpData storageStyle
+    class External,LLMProviders,SearchEngine,TunnelService externalStyle
+```
 
 1. **Host System (your machine)**:
    - Requires only Docker and a web browser
@@ -80,6 +202,99 @@ This architecture ensures:
 ## Core Components
 Agent Zero's architecture revolves around the following key components:
 
+```mermaid
+graph TB
+    subgraph AgentZero[🤖 Agent Zero Framework]
+        subgraph AgentLayer[👥 Agent Layer]
+            User[👤 User/Agent 0]
+            Agent1[🤖 Agent 1]
+            Agent2[🤖 Agent 2]
+            SubAgents[🤖 Sub-Agents...]
+        end
+        
+        subgraph CoreSystems[⚙️ Core Systems]
+            MessageLoop[🔄 Message Loop]
+            ToolSystem[🛠️ Tool System]
+            MemorySystem[🧠 Memory System]
+            PromptSystem[📝 Prompt System]
+        end
+        
+        subgraph ExtensibilityLayer[🔧 Extensibility Layer]
+            Extensions[🔌 Extensions]
+            Instruments[⚙️ Instruments]
+            CustomTools[🛠️ Custom Tools]
+        end
+        
+        subgraph DataLayer[💾 Data Layer]
+            Knowledge[📚 Knowledge Base]
+            Memory[🗃️ Memory Storage]
+            VectorDB[(🗄️ Vector Database)]
+            Logs[📋 Chat Logs]
+        end
+        
+        subgraph RuntimeLayer[🏃 Runtime Layer]
+            Docker[🐳 Docker Container]
+            WebUI[🌐 Web Interface]
+            API[⚡ API Endpoints]
+            FileSystem[📁 File System]
+        end
+    end
+    
+    subgraph ExternalServices[🌍 External Services]
+        LLMProviders[🤖 LLM Providers]
+        SearchEngines[🔍 Search Engines]
+        CloudServices[☁️ Cloud Services]
+    end
+    
+    %% Agent interactions
+    User --> Agent1
+    User --> Agent2
+    Agent1 --> SubAgents
+    Agent2 --> SubAgents
+    
+    %% Core system interactions
+    AgentLayer --> MessageLoop
+    MessageLoop --> ToolSystem
+    MessageLoop --> MemorySystem
+    MessageLoop --> PromptSystem
+    
+    %% Extensibility connections
+    ToolSystem --> Extensions
+    ToolSystem --> CustomTools
+    MemorySystem --> Instruments
+    
+    %% Data layer connections
+    MemorySystem --> Memory
+    MemorySystem --> VectorDB
+    ToolSystem --> Knowledge
+    MessageLoop --> Logs
+    
+    %% Runtime connections
+    AgentLayer -.-> Docker
+    MessageLoop -.-> WebUI
+    ToolSystem -.-> API
+    DataLayer -.-> FileSystem
+    
+    %% External connections
+    ToolSystem --> LLMProviders
+    ToolSystem --> SearchEngines
+    RuntimeLayer --> CloudServices
+    
+    classDef agentStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:3px
+    classDef coreStyle fill:#fff3e0,stroke:#ef6c00,stroke-width:3px
+    classDef extStyle fill:#e8f5e8,stroke:#2e7d32,stroke-width:3px
+    classDef dataStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:3px
+    classDef runtimeStyle fill:#fce4ec,stroke:#c2185b,stroke-width:3px
+    classDef externalStyle fill:#f1f8e9,stroke:#689f38,stroke-width:3px
+    
+    class AgentLayer,User,Agent1,Agent2,SubAgents agentStyle
+    class CoreSystems,MessageLoop,ToolSystem,MemorySystem,PromptSystem coreStyle
+    class ExtensibilityLayer,Extensions,Instruments,CustomTools extStyle
+    class DataLayer,Knowledge,Memory,VectorDB,Logs dataStyle
+    class RuntimeLayer,Docker,WebUI,API,FileSystem runtimeStyle
+    class ExternalServices,LLMProviders,SearchEngines,CloudServices externalStyle
+```
+
 ### 1. Agents
 The core actors within the framework. Agents receive instructions, reason, make decisions, and utilize tools to achieve their objectives. Agents operate within a hierarchical structure, with superior agents delegating tasks to subordinate agents.
 
@@ -97,6 +312,44 @@ Communication flows between agents through messages, which are structured accord
 #### Interaction Flow
 A typical interaction flow within Agent Zero might look like this:
 
+```mermaid
+sequenceDiagram
+    participant User as 👤 User
+    participant A0 as 🤖 Agent 0
+    participant VDB as 🗄️ VectorDB
+    participant Memory as 🧠 Memory
+    participant Tools as 🛠️ Tools
+    participant SubAgent as 🤖 Sub-Agent
+    participant LLM as 🤖 LLM Provider
+    
+    User->>A0: 1. Provide instruction
+    A0->>VDB: 2. Initialize VectorDB
+    A0->>Memory: 3. Access memory
+    Memory-->>A0: Return relevant context
+    
+    A0->>A0: 4. Analyze instruction & plan
+    Note over A0: Uses "thoughts" argument<br/>to formulate strategy
+    
+    alt Complex Task - Delegation Required
+        A0->>SubAgent: 5a. Delegate sub-task
+        SubAgent->>Tools: Use tools
+        Tools-->>SubAgent: Tool responses
+        SubAgent->>LLM: Process with LLM
+        LLM-->>SubAgent: Generated response
+        SubAgent-->>A0: Return results
+    else Simple Task - Direct Execution
+        A0->>Tools: 5b. Use tools directly
+        Tools-->>A0: Tool responses/queries
+    end
+    
+    A0->>LLM: 6. Process with LLM
+    LLM-->>A0: Generated response
+    A0->>Memory: 7. Store learnings
+    A0-->>User: 8. Provide final response
+    
+    Note over User,LLM: Communication flows through<br/>structured message templates<br/>with Thoughts, Tool usage,<br/>and Responses/Queries
+```
+
 ![Interaction Flow](res/flow-01.svg)
 
 1. The user provides an instruction to Agent 0
@@ -112,6 +365,82 @@ Tools are functionalities that agents can leverage. These can include anything f
 
 #### Built-in Tools
 Agent Zero comes with a set of built-in tools designed to help agents perform tasks efficiently:
+
+```mermaid
+graph TB
+    subgraph AgentCore[🤖 Agent Core]
+        Agent[Agent Instance]
+        ToolExec[Tool Executor]
+    end
+    
+    subgraph CoreTools[🛠️ Core Tools]
+        BehaviorAdj[🎭 Behavior Adjustment<br/>Dynamic behavior changes]
+        CallSub[👥 Call Subordinate<br/>Task delegation]
+        Response[💬 Response Tool<br/>Output responses]
+    end
+    
+    subgraph ExecutionTools[⚙️ Execution Tools]
+        CodeExec[💻 Code Execution<br/>Python, Node.js, Shell]
+        Input[⌨️ Input Tool<br/>Keyboard interaction]
+        Browser[🌐 Browser Tools<br/>Web automation]
+        BrowserAgent[🕷️ Browser Agent<br/>Advanced web tasks]
+    end
+    
+    subgraph DataTools[📊 Data & Knowledge Tools]
+        Knowledge[🔍 Knowledge Tool<br/>Search & retrieval]
+        WebContent[📄 Webpage Content<br/>Extract web text]
+        Vision[👁️ Vision Load<br/>Image processing]
+    end
+    
+    subgraph MemoryTools[🧠 Memory Tools]
+        MemSave[💾 Memory Save<br/>Store information]
+        MemLoad[📤 Memory Load<br/>Retrieve information]
+        MemDelete[🗑️ Memory Delete<br/>Remove data]
+        MemForget[🧹 Memory Forget<br/>Cleanup memory]
+    end
+    
+    subgraph SchedulingTools[📅 Scheduling Tools]
+        Scheduler[⏰ Task Scheduler<br/>Time-based tasks]
+        TaskDone[✅ Task Done<br/>Mark completion]
+    end
+    
+    subgraph ExternalSources[🌍 External Data Sources]
+        SearXNG[🔍 SearXNG<br/>Privacy-focused search]
+        LLMProviders[🤖 LLM Providers<br/>AI model access]
+        LocalKB[📚 Local Knowledge Base<br/>Private data]
+    end
+    
+    %% Connections
+    Agent --> ToolExec
+    ToolExec --> CoreTools
+    ToolExec --> ExecutionTools
+    ToolExec --> DataTools
+    ToolExec --> MemoryTools
+    ToolExec --> SchedulingTools
+    
+    Knowledge --> SearXNG
+    Knowledge --> LLMProviders
+    Knowledge --> LocalKB
+    
+    CodeExec -.-> ExecutionTools
+    Browser -.-> BrowserAgent
+    
+    classDef coreStyle fill:#e3f2fd,stroke:#0277bd,stroke-width:2px
+    classDef toolStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef execStyle fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef dataStyle fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef memStyle fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef schedStyle fill:#f1f8e9,stroke:#558b2f,stroke-width:2px
+    classDef extStyle fill:#fff8e1,stroke:#f57f17,stroke-width:2px
+    
+    class AgentCore,Agent,ToolExec coreStyle
+    class CoreTools,BehaviorAdj,CallSub,Response toolStyle
+    class ExecutionTools,CodeExec,Input,Browser,BrowserAgent execStyle
+    class DataTools,Knowledge,WebContent,Vision dataStyle
+    class MemoryTools,MemSave,MemLoad,MemDelete,MemForget memStyle
+    class SchedulingTools,Scheduler,TaskDone schedStyle
+    class ExternalSources,SearXNG,LLMProviders,LocalKB extStyle
+```
 
 | Tool | Function |
 | --- | --- |
@@ -160,6 +489,89 @@ Users can create custom tools to extend Agent Zero's capabilities. Custom tools 
 ### 3. Memory System
 The memory system is a critical component of Agent Zero, enabling the agent to learn and adapt from past interactions. It operates on a hybrid model where part of the memory is managed automatically by the framework while users can also manually input and extract information.
 
+```mermaid
+flowchart TB
+    subgraph MemorySystem[🧠 Memory System Architecture]
+        subgraph InputSources[📥 Input Sources]
+            UserInput[👤 User Input<br/>Manual data entry]
+            AutoCapture[🤖 Auto Capture<br/>Conversation fragments]
+            Solutions[✅ Solution Storage<br/>Successful outcomes]
+        end
+        
+        subgraph MemoryTypes[🗂️ Memory Categories]
+            UserData[👤 User Information<br/>Names, API keys, preferences]
+            Fragments[🧩 Conversation Fragments<br/>Auto-updated pieces]
+            SolutionMem[💡 Solutions Database<br/>Past successful solutions]
+            Metadata[📋 Metadata Store<br/>IDs, timestamps, tags]
+        end
+        
+        subgraph ProcessingLayer[⚙️ Processing Layer]
+            VectorDB[(🗄️ Vector Database<br/>Semantic search)]
+            Indexing[📇 Indexing Engine<br/>Categorization]
+            Retrieval[🔍 Retrieval System<br/>Context matching]
+        end
+        
+        subgraph MessageManagement[💬 Message History Management]
+            RecentMsgs[📄 Recent Messages<br/>Original form]
+            CompressedMsgs[🗜️ Compressed Messages<br/>Summarized form]
+            BulkSummary[📚 Bulk Summaries<br/>Topic-based grouping]
+            ContextWindow[🪟 Context Window<br/>Dynamic sizing]
+        end
+        
+        subgraph StorageBackend[💾 Storage Backend]
+            LocalFiles[(📁 Local File System)]
+            MemoryFiles[(🧠 Memory Directory)]
+            TempCache[(⚡ Temporary Cache)]
+        end
+    end
+    
+    subgraph ExternalAccess[🌐 External Access]
+        Agent[🤖 Agent]
+        Tools[🛠️ Memory Tools]
+        Extensions[🔧 Extensions]
+    end
+    
+    %% Data Flow
+    UserInput --> UserData
+    AutoCapture --> Fragments
+    Solutions --> SolutionMem
+    
+    UserData --> Indexing
+    Fragments --> Indexing
+    SolutionMem --> Indexing
+    Indexing --> Metadata
+    
+    Indexing --> VectorDB
+    VectorDB --> Retrieval
+    
+    RecentMsgs --> CompressedMsgs
+    CompressedMsgs --> BulkSummary
+    BulkSummary --> ContextWindow
+    
+    MemoryTypes --> StorageBackend
+    MessageManagement --> StorageBackend
+    
+    Agent --> Retrieval
+    Tools --> ProcessingLayer
+    Extensions --> MessageManagement
+    
+    Retrieval -.-> ContextWindow
+    
+    classDef inputStyle fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef memoryStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef processStyle fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef messageStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef storageStyle fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef accessStyle fill:#f1f8e9,stroke:#689f38,stroke-width:2px
+    
+    class InputSources,UserInput,AutoCapture,Solutions inputStyle
+    class MemoryTypes,UserData,Fragments,SolutionMem,Metadata memoryStyle
+    class ProcessingLayer,VectorDB,Indexing,Retrieval processStyle
+    class MessageManagement,RecentMsgs,CompressedMsgs,BulkSummary,ContextWindow messageStyle
+    class StorageBackend,LocalFiles,MemoryFiles,TempCache storageStyle
+    class ExternalAccess,Agent,Tools,Extensions accessStyle
+```
+
 #### Memory Structure
 The memory is categorized into four distinct areas:
 - **Storage and retrieval** of user-provided information (e.g., names, API keys)
@@ -199,6 +611,104 @@ By dynamically adjusting context windows and summarizing past interactions, Agen
 
 ### 4. Prompts
 The `prompts` directory contains various Markdown files that control agent behavior and communication. The most important file is `agent.system.main.md`, which acts as a central hub, referencing other prompt files.
+
+```mermaid
+flowchart TB
+    subgraph PromptSystem[📝 Prompt System Architecture]
+        subgraph CorePrompts[🎯 Core System Prompts]
+            MainRole[👤 agent.system.main.role.md<br/>Defines agent role & capabilities]
+            MainComm[💬 agent.system.main.communication.md<br/>Communication guidelines]
+            MainSolving[🧩 agent.system.main.solving.md<br/>Problem-solving approach]
+            MainTips[💡 agent.system.main.tips.md<br/>Additional guidance]
+            MainBehaviour[🎭 agent.system.main.behaviour.md<br/>Dynamic behavior rules]
+            MainEnv[🌍 agent.system.main.environment.md<br/>Runtime environment context]
+        end
+        
+        subgraph ToolPrompts[🛠️ Tool System Prompts]
+            ToolsMain[🗂️ agent.system.tools.md<br/>Tool organization hub]
+            ToolCode[💻 agent.system.tool.code_execution.md]
+            ToolKnowledge[🔍 agent.system.tool.knowledge.md]
+            ToolMemory[🧠 agent.system.tool.memory.md]
+            ToolResponse[💬 agent.system.tool.response.md]
+            ToolSub[👥 agent.system.tool.call_subordinate.md]
+            ToolBehavior[🎭 agent.system.tool.behavior_adjustment.md]
+        end
+        
+        subgraph PromptHierarchy[📁 Prompt Organization]
+            DefaultPrompts[📂 prompts/default/<br/>Base configuration]
+            CustomPrompts[📂 prompts/custom/<br/>User customizations]
+            BehaviorFiles[🎯 behaviour.md<br/>Dynamic rules in memory]
+        end
+        
+        subgraph DynamicBehavior[🔄 Dynamic Behavior System]
+            BehaviorAdjust[🔧 Behavior Adjustment Tool]
+            BehaviorMerge[🔀 Rule Merging Logic]
+            BehaviorInject[💉 System Prompt Injection]
+            BehaviorPersist[💾 Persistent Storage]
+        end
+    end
+    
+    subgraph Agent[🤖 Agent Core]
+        SystemPrompt[📋 Compiled System Prompt]
+        MessageLoop[🔄 Message Processing]
+        PromptBuilder[🏗️ Prompt Builder]
+    end
+    
+    subgraph UserInterface[👤 User Interface]
+        SettingsPage[⚙️ Settings Page<br/>Prompt selection]
+        BehaviorRequests[🗣️ User Behavior Requests]
+        CustomConfig[🎨 Custom Configuration]
+    end
+    
+    %% Main connections
+    DefaultPrompts --> PromptBuilder
+    CustomPrompts --> PromptBuilder
+    PromptBuilder --> SystemPrompt
+    SystemPrompt --> MessageLoop
+    
+    %% Tool prompt connections
+    ToolsMain --> ToolCode
+    ToolsMain --> ToolKnowledge
+    ToolsMain --> ToolMemory
+    ToolsMain --> ToolResponse
+    ToolsMain --> ToolSub
+    ToolsMain --> ToolBehavior
+    
+    %% Core prompt integration
+    MainRole --> PromptBuilder
+    MainComm --> PromptBuilder
+    MainSolving --> PromptBuilder
+    MainTips --> PromptBuilder
+    MainBehaviour --> PromptBuilder
+    MainEnv --> PromptBuilder
+    ToolsMain --> PromptBuilder
+    
+    %% Dynamic behavior flow
+    BehaviorRequests --> BehaviorAdjust
+    BehaviorAdjust --> BehaviorMerge
+    BehaviorMerge --> BehaviorFiles
+    BehaviorFiles --> BehaviorInject
+    BehaviorInject --> SystemPrompt
+    BehaviorMerge --> BehaviorPersist
+    
+    %% User interface connections
+    SettingsPage --> CustomConfig
+    CustomConfig --> CustomPrompts
+    
+    classDef coreStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef toolStyle fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef hierarchyStyle fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef dynamicStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef agentStyle fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    classDef uiStyle fill:#f1f8e9,stroke:#689f38,stroke-width:2px
+    
+    class CorePrompts,MainRole,MainComm,MainSolving,MainTips,MainBehaviour,MainEnv coreStyle
+    class ToolPrompts,ToolsMain,ToolCode,ToolKnowledge,ToolMemory,ToolResponse,ToolSub,ToolBehavior toolStyle
+    class PromptHierarchy,DefaultPrompts,CustomPrompts,BehaviorFiles hierarchyStyle
+    class DynamicBehavior,BehaviorAdjust,BehaviorMerge,BehaviorInject,BehaviorPersist dynamicStyle
+    class Agent,SystemPrompt,MessageLoop,PromptBuilder agentStyle
+    class UserInterface,SettingsPage,BehaviorRequests,CustomConfig uiStyle
+```
 
 #### Core Prompt Files
 | Prompt File | Description |
@@ -288,6 +798,102 @@ Instruments provide a way to add custom functionalities to Agent Zero without ad
 
 ### 7. Extensions
 Extensions are a powerful feature of Agent Zero, designed to keep the main codebase clean and organized while allowing for greater flexibility and modularity.
+
+```mermaid
+flowchart TB
+    subgraph ExtensionSystem[🔧 Extension System Architecture]
+        subgraph ExtensionTypes[📁 Extension Categories]
+            subgraph MsgLoopStart[🚀 Message Loop Start]
+                MLS1[_10_extension.py]
+                MLS2[_20_extension.py]
+                MLS3[_30_extension.py]
+            end
+            
+            subgraph MsgLoopBefore[📝 Message Loop Prompts Before]
+                MLB1[_10_extension.py]
+                MLB2[_20_extension.py]
+                MLB3[_30_extension.py]
+            end
+            
+            subgraph MsgLoopAfter[📋 Message Loop Prompts After]
+                MLA1[_50_recall_memories.py]
+                MLA2[_51_recall_solutions.py]
+                MLA3[_60_include_datetime.py]
+                MLA4[_91_recall_wait.py]
+            end
+            
+            subgraph MsgLoopEnd[🏁 Message Loop End]
+                MLE1[_10_organize_history.py]
+                MLE2[_90_save_chat.py]
+            end
+            
+            subgraph SystemPrompt[🎯 System Prompt]
+                SP1[_20_behaviour_prompt.py]
+                SP2[_30_custom_prompt.py]
+            end
+            
+            subgraph MonologueHooks[💭 Monologue Hooks]
+                MonStart[Monologue Start]
+                MonEnd[Monologue End]
+            end
+        end
+        
+        subgraph ExecutionFlow[⚡ Execution Flow]
+            Agent[🤖 Agent Core]
+            MessageLoop[🔄 Message Loop]
+            ExtensionLoader[📦 Extension Loader]
+            ExecutionOrder[🔢 Alphabetical Order]
+        end
+        
+        subgraph ExtensionFeatures[✨ Extension Features]
+            MemoryMgmt[🧠 Memory Management]
+            PromptHandling[📝 Prompt Handling]
+            HistoryOrg[📚 History Organization]
+            BehaviorMod[🎭 Behavior Modification]
+            SystemInteg[🔗 System Integration]
+        end
+    end
+    
+    subgraph CustomExtensions[🛠️ Custom Extension Development]
+        DevProcess[👨‍💻 Development Process]
+        NamingConv[📋 Naming Convention<br/>Start with numbers]
+        FileStructure[📁 File Structure<br/>python/extensions/category/]
+        LoadOrder[🔢 Load Order<br/>Alphabetical execution]
+    end
+    
+    %% Connections
+    Agent --> MessageLoop
+    MessageLoop --> ExtensionLoader
+    ExtensionLoader --> ExecutionOrder
+    
+    ExecutionOrder --> MsgLoopStart
+    ExecutionOrder --> MsgLoopBefore
+    ExecutionOrder --> MsgLoopAfter
+    ExecutionOrder --> MsgLoopEnd
+    ExecutionOrder --> SystemPrompt
+    ExecutionOrder --> MonologueHooks
+    
+    MsgLoopStart -.-> MemoryMgmt
+    MsgLoopBefore -.-> PromptHandling
+    MsgLoopAfter -.-> MemoryMgmt
+    MsgLoopEnd -.-> HistoryOrg
+    SystemPrompt -.-> BehaviorMod
+    MonologueHooks -.-> SystemInteg
+    
+    DevProcess --> CustomExtensions
+    
+    classDef extensionStyle fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
+    classDef flowStyle fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef featureStyle fill:#fff3e0,stroke:#ef6c00,stroke-width:2px
+    classDef customStyle fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef hookStyle fill:#fce4ec,stroke:#c2185b,stroke-width:2px
+    
+    class ExtensionTypes,MsgLoopStart,MsgLoopBefore,MsgLoopAfter,MsgLoopEnd,SystemPrompt extensionStyle
+    class ExecutionFlow,Agent,MessageLoop,ExtensionLoader,ExecutionOrder flowStyle
+    class ExtensionFeatures,MemoryMgmt,PromptHandling,HistoryOrg,BehaviorMod,SystemInteg featureStyle
+    class CustomExtensions,DevProcess,NamingConv,FileStructure,LoadOrder customStyle
+    class MonologueHooks,MonStart,MonEnd hookStyle
+```
 
 #### Structure
 Extensions can be found in `python/extensions` directory:
