@@ -29,6 +29,13 @@ RUN apt-get update && apt-get install -y \
     gnupg \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Docker for Agent Zero's container features
+RUN curl -fsSL https://get.docker.com | sh && \
+    usermod -aG docker gitpod
+
+# Install Node.js (required for some Agent Zero features) using apt package
+RUN apt-get update && apt-get install -y nodejs npm && rm -rf /var/lib/apt/lists/*
+
 # Install GNU Guix package manager
 RUN cd /tmp && \
     wget https://git.savannah.gnu.org/cgit/guix.git/plain/etc/guix-install.sh && \
@@ -36,24 +43,19 @@ RUN cd /tmp && \
     echo "Installing Guix..." && \
     ./guix-install.sh || true
 
-# Set up Guix environment variables
+# Set up Guix environment variables only if Guix profile exists
 ENV GUIX_PROFILE="/root/.config/guix/current"
 ENV GUIX_LOCPATH="/root/.guix-profile/lib/locale/"
 ENV PATH="/root/.config/guix/current/bin:/root/.guix-profile/bin:$PATH"
 ENV LANG="en_US.UTF-8"
-ENV SSL_CERT_DIR="/root/.guix-profile/etc/ssl/certs"
-ENV SSL_CERT_FILE="/root/.guix-profile/etc/ssl/certs/ca-certificates.crt"
-ENV GIT_SSL_FILE="/root/.guix-profile/etc/ssl/certs/ca-certificates.crt"
-ENV GIT_SSL_CAINFO="/root/.guix-profile/etc/ssl/certs/ca-certificates.crt"
-ENV CURL_CA_BUNDLE="/root/.guix-profile/etc/ssl/certs/ca-certificates.crt"
-
-# Install Docker for Agent Zero's container features
-RUN curl -fsSL https://get.docker.com | sh && \
-    usermod -aG docker gitpod
-
-# Install Node.js (required for some Agent Zero features)
-RUN curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - && \
-    apt-get install -y nodejs
+# Only set SSL variables if the certificate file exists
+RUN if [ -f "/root/.guix-profile/etc/ssl/certs/ca-certificates.crt" ]; then \
+    echo 'export SSL_CERT_DIR="/root/.guix-profile/etc/ssl/certs"' >> /etc/environment && \
+    echo 'export SSL_CERT_FILE="/root/.guix-profile/etc/ssl/certs/ca-certificates.crt"' >> /etc/environment && \
+    echo 'export GIT_SSL_FILE="/root/.guix-profile/etc/ssl/certs/ca-certificates.crt"' >> /etc/environment && \
+    echo 'export GIT_SSL_CAINFO="/root/.guix-profile/etc/ssl/certs/ca-certificates.crt"' >> /etc/environment && \
+    echo 'export CURL_CA_BUNDLE="/root/.guix-profile/etc/ssl/certs/ca-certificates.crt"' >> /etc/environment; \
+    fi
 
 # Setup workspace permissions
 RUN chown -R gitpod:gitpod /workspace
