@@ -1,7 +1,7 @@
 # Gitpod Dockerfile for Agent Zero
-# Based on gitpod/workspace-python-3.10 with Guix integration
+# Based on gitpod/workspace-python with Agent Zero dependencies
 
-FROM gitpod/workspace-python-3.10:2025-07-23-06-50-33
+FROM gitpod/workspace-python:2025-07-23-06-50-33
 
 # Switch to root for system installation
 USER root
@@ -31,7 +31,10 @@ RUN apt-get update && apt-get install -y \
 
 # Install Docker for Agent Zero's container features
 RUN curl -fsSL https://get.docker.com | sh && \
-    usermod -aG docker gitpod
+    usermod -aG docker gitpod && \
+    # Ensure Docker socket will be available
+    mkdir -p /var/run && \
+    chmod 755 /var/run
 
 # Install Node.js (required for some Agent Zero features) using apt package
 RUN apt-get update && apt-get install -y nodejs npm && rm -rf /var/lib/apt/lists/*
@@ -77,10 +80,8 @@ RUN mkdir -p /home/gitpod/agent-zero-logs /home/gitpod/agent-zero-memory
 # Set working directory
 WORKDIR /workspace/agent-zero-cron
 
-# Copy entrypoint script for Gitpod
-COPY --chown=gitpod:gitpod .gitpod/setup.sh /home/gitpod/.gitpod/setup.sh
-COPY --chown=gitpod:gitpod .gitpod/deploy.sh /home/gitpod/.gitpod/deploy.sh
-RUN chmod +x /home/gitpod/.gitpod/*.sh
+# Setup deployment scripts (they will be available in workspace)
+RUN mkdir -p /home/gitpod/.gitpod
 
 # Expose ports used by Agent Zero
 EXPOSE 50001 50080 80 8080 22

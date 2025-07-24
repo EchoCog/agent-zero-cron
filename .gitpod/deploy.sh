@@ -57,6 +57,13 @@ check_prerequisites() {
         return 1
     fi
     
+    # Check Docker (optional for Agent Zero features)
+    if command -v docker >/dev/null 2>&1; then
+        log_success "Docker found (enables container features)"
+    else
+        log_warning "Docker not found (some Agent Zero features may be limited)"
+    fi
+    
     # Check if we're in Gitpod
     if [ -n "$GITPOD_WORKSPACE_ID" ]; then
         log_success "Running in Gitpod environment"
@@ -71,14 +78,31 @@ check_prerequisites() {
 setup_python_deps() {
     log "Setting up Python dependencies..."
     
-    # Upgrade pip
-    python -m pip install --upgrade pip
+    # Check if we have network connectivity
+    if ! ping -c 1 pypi.org >/dev/null 2>&1; then
+        log_warning "No network connectivity to PyPI, skipping package installation"
+        log_warning "In Gitpod, packages will be installed via the Docker image"
+        return 0
+    fi
     
-    # Install requirements
+    # Upgrade pip
+    python -m pip install --upgrade pip --timeout 60 --retries 1 || {
+        log_warning "Failed to upgrade pip, continuing with existing version"
+    }
+    
+    # Install essential packages first
+    log "Installing essential packages..."
+    python -m pip install --timeout 120 --retries 1 flask python-dotenv || {
+        log_warning "Failed to install essential packages, Agent Zero may have limited functionality"
+    }
+    
+    # Install full requirements with relaxed constraints
     if [ -f "requirements.txt" ]; then
-        log "Installing from requirements.txt..."
-        python -m pip install -r requirements.txt
-        log_success "Python dependencies installed"
+        log "Installing from requirements.txt (this may take a while)..."
+        python -m pip install -r requirements.txt --timeout 900 --retries 1 || {
+            log_warning "Full requirements install failed, Agent Zero may have limited functionality"
+        }
+        log_success "Python dependencies installation completed"
     else
         log_error "requirements.txt not found"
         return 1
@@ -128,13 +152,54 @@ setup_agent_zero() {
             echo "# Gitpod specific configurations" >> .env
             echo "GITPOD_WORKSPACE=true" >> .env
             echo "WEB_PORT=$AGENT_ZERO_PORT" >> .env
+            echo "WEB_UI_PORT=$AGENT_ZERO_PORT" >> .env
         fi
     fi
     
-    # Run preload
+    # Create a minimal test to check basic functionality
+    cat > test_basic.py << 'EOF'
+#!/usr/bin/env python3
+import sys
+import os
+
+def test_basic():
+    print("🧪 Testing basic Agent Zero setup...")
+    
+    # Test Python environment
+    print(f"✅ Python version: {sys.version}")
+    
+    # Test basic file structure
+    required_files = ['run_ui.py', 'run_cli.py', 'agent.py']
+    for file in required_files:
+        if os.path.exists(file):
+            print(f"✅ Found: {file}")
+        else:
+            print(f"❌ Missing: {file}")
+            
+    # Test directories
+    required_dirs = ['logs', 'memory', 'tmp']
+    for dir in required_dirs:
+        if os.path.exists(dir):
+            print(f"✅ Directory exists: {dir}")
+        else:
+            print(f"❌ Directory missing: {dir}")
+    
+    print("🧪 Basic setup test completed")
+
+if __name__ == "__main__":
+    test_basic()
+EOF
+    
+    python test_basic.py
+    
+    # Run preload if available and basic dependencies are met
     if [ -f "preload.py" ]; then
-        log "Running Agent Zero preload..."
-        python preload.py --dockerized=true || log_warning "Preload completed with warnings"
+        log "Attempting to run Agent Zero preload..."
+        if python -c "import flask" 2>/dev/null; then
+            python preload.py --dockerized=true || log_warning "Preload completed with warnings"
+        else
+            log_warning "Skipping preload - Flask not available"
+        fi
     fi
     
     log_success "Agent Zero environment setup complete"
@@ -218,6 +283,11 @@ show_status() {
     else
         echo "🔧 Guix: Not available"
     fi
+    if command -v docker >/dev/null 2>&1; then
+        echo "🐳 Docker: $(docker --version)"
+    else
+        echo "🐳 Docker: Not available"
+    fi
     echo "📁 Working directory: $(pwd)"
     echo "🌐 Web UI port: $AGENT_ZERO_PORT"
     
@@ -232,6 +302,9 @@ show_status() {
     echo "  python run_cli.py    # Start CLI interface"
     if command -v guix >/dev/null 2>&1; then
         echo "  guix shell           # Enter Guix shell"
+    fi
+    if command -v docker >/dev/null 2>&1; then
+        echo "  docker ps            # Check running containers"
     fi
     echo ""
 }
