@@ -6,6 +6,8 @@
 
 # ignore test files in root dir
 /*.test.py
+test_gitpod_config.py
+test_basic.py
 
 # Ignore git internal files (for bundler)
 .git/

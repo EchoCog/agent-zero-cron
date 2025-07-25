@@ -6,7 +6,7 @@ This directory contains configuration files for deploying Agent Zero in Gitpod w
 
 The Gitpod deployment provides a one-click solution to run Agent Zero in the cloud using:
 
-- **Base Image**: `gitpod/workspace-python-3.10:2025-07-23-06-50-33`
+- **Base Image**: `gitpod/workspace-python:2025-07-23-06-50-33`
 - **Package Manager**: GNU Guix for reproducible builds
 - **Automation**: Complete automated setup and deployment
 - **Access**: Web UI accessible via Gitpod's port forwarding

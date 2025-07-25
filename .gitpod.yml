@@ -44,6 +44,8 @@ tasks:
   - name: Deploy Agent Zero
     init: |
       echo "🚀 Starting Agent Zero Gitpod deployment..."
+      # Make deployment scripts executable
+      chmod +x .gitpod/*.sh
       # Run the automated deployment script
       ./.gitpod/deploy.sh deploy
     command: |
