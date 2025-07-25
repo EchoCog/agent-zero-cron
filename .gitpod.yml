@@ -35,9 +35,7 @@ vscode:
     - ms-python.flake8
     - ms-python.pylint
     - usernamehw.errorlens
-    - ms-vscode.vscode-json
-    - redhat.vscode-yaml
-    - ms-vscode.docker
+    - ms-azuretools.vscode-docker
 
 # Workspace initialization tasks
 tasks:
@@ -53,7 +51,6 @@ tasks:
       echo "Starting Agent Zero Web UI..."
       ./.gitpod/deploy.sh start
     openMode: tab-after
-    
   - name: Development Terminal
     command: |
       echo "🖥️ Agent Zero development environment ready!"
@@ -69,21 +66,3 @@ tasks:
       echo ""
       bash
     openMode: tab-after
-
-# GitHub prebuilds for faster startup
-github:
-  prebuilds:
-    master:
-      true
-    branches:
-      true
-    pullRequests:
-      true
-    pullRequestsFromForks:
-      true
-    addCheck:
-      true
-    addComment:
-      true
-    addBadge:
-      true
