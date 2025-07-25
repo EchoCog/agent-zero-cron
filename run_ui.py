@@ -8,7 +8,6 @@ from functools import wraps
 import threading
 import signal
 from flask import Flask, request, Response
-from flask_basicauth import BasicAuth
 from python.helpers import errors, files, git
 from python.helpers.files import get_abs_path
 from python.helpers import persist_chat, runtime, dotenv, process
@@ -30,9 +29,6 @@ app = Flask("app", static_folder=get_abs_path("./webui"), static_url_path="/")
 app.config["JSON_SORT_KEYS"] = False  # Disable key sorting in jsonify
 
 lock = threading.Lock()
-
-# Set up basic authentication
-basic_auth = BasicAuth(app)
 
 
 def is_loopback_address(address):
