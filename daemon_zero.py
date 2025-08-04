@@ -49,8 +49,14 @@ class DaemonZero:
         signal.signal(signal.SIGTERM, self._signal_handler)
         signal.signal(signal.SIGINT, self._signal_handler)
         
-        # Register cleanup on exit
-        atexit.register(self.cleanup)
+        # Register cleanup on exit (only once per class)
+        if not hasattr(DaemonZero, '_atexit_registered'):
+            atexit.register(self.__class__._global_cleanup)
+            DaemonZero._atexit_registered = True
+            DaemonZero._instances = []
+        
+        # Track instances for global cleanup
+        DaemonZero._instances.append(self)
     
     def _setup_logging(self) -> logging.Logger:
         """Setup logging for daemon."""
@@ -161,16 +167,22 @@ class DaemonZero:
     async def initialize_components(self) -> None:
         """Initialize daemon components."""
         try:
-            # Initialize task scheduler (real or mock)
+            # Initialize task scheduler (real or lite or mock)
             try:
                 from python.helpers.task_scheduler import TaskScheduler
                 self.scheduler = TaskScheduler.get()
                 self.logger.info("Real task scheduler initialized")
             except ImportError as e:
-                self.logger.warning(f"Real task scheduler not available, using mock: {e}")
-                from minimal_stubs import get_minimal_task_scheduler
-                self.scheduler = get_minimal_task_scheduler()
-                self.logger.info("Mock task scheduler initialized")
+                self.logger.warning(f"Real task scheduler not available: {e}")
+                try:
+                    from python.helpers.task_scheduler_lite import TaskScheduler as LiteTaskScheduler
+                    self.scheduler = LiteTaskScheduler.get()
+                    self.logger.info("Lite task scheduler initialized")
+                except ImportError as e2:
+                    self.logger.warning(f"Lite task scheduler not available: {e2}")
+                    from minimal_stubs import get_minimal_task_scheduler
+                    self.scheduler = get_minimal_task_scheduler()
+                    self.logger.info("Mock task scheduler initialized")
             
             # Initialize workflow manager (real or mock)
             try:
@@ -314,9 +326,23 @@ class DaemonZero:
     
     def cleanup(self) -> None:
         """Cleanup daemon resources."""
+        # Use a flag to prevent multiple cleanup calls
+        if hasattr(self, '_cleaned_up') and self._cleaned_up:
+            return
+        
+        self._cleaned_up = True
         self.logger.info("Cleaning up daemon resources...")
         self.remove_pidfile()
         self.logger.info("Daemon Zero cleanup completed")
+    
+    @classmethod
+    def _global_cleanup(cls):
+        """Global cleanup for all instances."""
+        if hasattr(cls, '_instances'):
+            for instance in cls._instances:
+                if hasattr(instance, 'cleanup'):
+                    instance.cleanup()
+            cls._instances.clear()
     
     def get_status(self) -> Dict[str, Any]:
         """Get current daemon status."""

@@ -1,7 +1,33 @@
-import os, webcolors, html
+import os, html
 import sys
 from datetime import datetime
 from . import files
+
+# Handle missing webcolors dependency with fallback
+try:
+    import webcolors
+    WEBCOLORS_AVAILABLE = True
+except ImportError:
+    WEBCOLORS_AVAILABLE = False
+    # Provide minimal fallback functionality
+    class webcolors:
+        @staticmethod
+        def name_to_rgb(name):
+            # Basic color mapping for common colors
+            color_map = {
+                'red': (255, 0, 0),
+                'green': (0, 255, 0),
+                'blue': (0, 0, 255),
+                'yellow': (255, 255, 0),
+                'white': (255, 255, 255),
+                'black': (0, 0, 0),
+                'gray': (128, 128, 128),
+                'orange': (255, 165, 0),
+                'purple': (128, 0, 128),
+                'cyan': (0, 255, 255),
+                'magenta': (255, 0, 255),
+            }
+            return color_map.get(name.lower(), (128, 128, 128))  # Default to gray
 
 class PrintStyle:
     last_endline = True

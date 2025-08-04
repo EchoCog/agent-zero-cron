@@ -9,10 +9,36 @@ from enum import Enum
 from os.path import exists
 from typing import Any, Callable, Dict, Literal, Optional, Type, TypeVar, Union, cast, ClassVar
 
-import nest_asyncio
-nest_asyncio.apply()
+# Handle missing nest_asyncio dependency with fallback
+try:
+    import nest_asyncio
+    nest_asyncio.apply()
+    NEST_ASYNCIO_AVAILABLE = True
+except ImportError:
+    NEST_ASYNCIO_AVAILABLE = False
+    # nest_asyncio is only needed for running asyncio in environments that already have an event loop
+    # If it's not available, we'll handle async execution differently
+    pass
 
-from crontab import CronTab
+# Handle missing crontab dependency with fallback
+try:
+    from crontab import CronTab
+    CRONTAB_AVAILABLE = True
+except ImportError:
+    CRONTAB_AVAILABLE = False
+    # Provide basic fallback for cron functionality
+    class CronTab:
+        def __init__(self, cron="0 0 * * *"):
+            self._cron = cron
+            
+        def next(self, default_utc=True):
+            # Simple fallback - return 24 hours from now for daily tasks
+            from datetime import datetime, timedelta
+            return (datetime.now() + timedelta(days=1)).timestamp()
+            
+        @classmethod
+        def parse(cls, cron_string):
+            return cls(cron_string)
 from pydantic import BaseModel, Field, PrivateAttr
 
 from agent import Agent, AgentContext, UserMessage
