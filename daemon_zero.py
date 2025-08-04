@@ -184,16 +184,22 @@ class DaemonZero:
                     self.scheduler = get_minimal_task_scheduler()
                     self.logger.info("Mock task scheduler initialized")
             
-            # Initialize workflow manager (real or mock)
+            # Initialize workflow manager (real or lite or mock)
             try:
                 from python.helpers.task_workflow import TaskWorkflowManager
                 self.workflow_manager = TaskWorkflowManager.get_instance()
                 self.logger.info("Real workflow manager initialized")
             except ImportError as e:
-                self.logger.warning(f"Real workflow manager not available, using mock: {e}")
-                from minimal_stubs import get_minimal_workflow_manager
-                self.workflow_manager = get_minimal_workflow_manager()
-                self.logger.info("Mock workflow manager initialized")
+                self.logger.warning(f"Real workflow manager not available: {e}")
+                try:
+                    from python.helpers.workflow_manager_lite import TaskWorkflowManager as LiteWorkflowManager
+                    self.workflow_manager = LiteWorkflowManager.get_instance()
+                    self.logger.info("Lite workflow manager initialized")
+                except ImportError as e2:
+                    self.logger.warning(f"Lite workflow manager not available: {e2}")
+                    from minimal_stubs import get_minimal_workflow_manager
+                    self.workflow_manager = get_minimal_workflow_manager()
+                    self.logger.info("Mock workflow manager initialized")
             
             self.logger.info("Daemon components initialized successfully")
             
