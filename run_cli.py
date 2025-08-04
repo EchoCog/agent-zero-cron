@@ -1,7 +1,7 @@
 import asyncio
 import sys
 import threading, time, models, os
-from ansio import application_keypad, mouse_input, raw_input
+from ansio import application_keypad, mouse_input
 from ansio.input import InputEvent, get_input_event
 from agent import AgentContext, UserMessage
 from python.helpers.print_style import PrintStyle
@@ -84,7 +84,7 @@ def capture_keys():
             
             if context.streaming_agent:
                 # with raw_input, application_keypad, mouse_input:
-                with input_lock, raw_input, application_keypad:
+                with input_lock, application_keypad:
                     event: InputEvent | None = get_input_event(timeout=0.1)
                     if event and (event.shortcut.isalpha() or event.shortcut.isspace()):
                         intervent=True
