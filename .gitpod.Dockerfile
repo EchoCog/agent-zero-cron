@@ -27,6 +27,9 @@ RUN apt-get update && apt-get install -y \
     # Required for Guix
     xz-utils \
     gnupg \
+    # Additional system dependencies for Python packages
+    libffi-dev \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Docker for Agent Zero's container features
@@ -73,6 +76,18 @@ RUN echo 'export GUIX_PROFILE="$HOME/.config/guix/current"' >> ~/.bashrc && \
 
 # Install Python packages commonly needed
 RUN python -m pip install --upgrade pip setuptools wheel
+
+# Install all Python dependencies from requirements.txt
+# Copy requirements.txt first for better Docker layer caching
+COPY requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt --break-system-packages
+
+# Install additional dependencies discovered during troubleshooting
+RUN pip install \
+    cryptography \
+    nest-asyncio \
+    python-crontab \
+    --break-system-packages
 
 # Create directories for Agent Zero
 RUN mkdir -p /home/gitpod/agent-zero-logs /home/gitpod/agent-zero-memory

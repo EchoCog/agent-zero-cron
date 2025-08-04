@@ -32,3 +32,7 @@ unstructured-client==0.25.9
 webcolors==24.6.0
 crontab==1.0.1
 inngest==0.5.4
+# Additional dependencies discovered during troubleshooting
+cryptography
+nest-asyncio
+python-crontab
