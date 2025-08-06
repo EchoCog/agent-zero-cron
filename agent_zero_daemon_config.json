@@ -1,0 +1,29 @@
+{
+  "scheduler": {
+    "enabled": true,
+    "tick_interval": 30,
+    "max_concurrent_tasks": 3
+  },
+  "workflow": {
+    "enabled": true,
+    "inngest_enabled": false,
+    "default_timeout": 300
+  },
+  "agent": {
+    "model_provider": "openai",
+    "model_name": "gpt-4",
+    "max_context_length": 8000,
+    "temperature": 0.1,
+    "system_prompt": "You are a helpful AI assistant running as a background agent."
+  },
+  "daemon": {
+    "auto_restart": true,
+    "health_check_interval": 300,
+    "max_memory_mb": 2048
+  },
+  "logging": {
+    "level": "INFO",
+    "max_files": 10,
+    "max_size_mb": 100
+  }
+}
