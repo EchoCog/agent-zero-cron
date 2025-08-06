@@ -102,4 +102,4 @@ RUN mkdir -p /home/gitpod/.gitpod
 EXPOSE 50001 50080 80 8080 22
 
 # Default command (will be overridden by Gitpod tasks)
-CMD ["bash"]
+CMD ["bash"]# Dependency fix branch
