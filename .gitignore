@@ -4,6 +4,12 @@
 **/__pycache__/
 **/.conda/
 
+# Ignore docker/run/agent-zero directory
+docker/run/agent-zero/
+
+#Ignore cursor rules
+.cursor/
+
 # ignore test files in root dir
 /*.test.py
 test_gitpod_config.py
@@ -21,6 +27,9 @@ bundle/*/
 
 # Handle work_dir directory
 work_dir/*
+
+# Handle specific docker directories
+docker/run/agent-zero/**
 
 # Handle memory directory
 memory/**
@@ -49,6 +58,11 @@ instruments/**
 # Global rule to include .gitkeep files anywhere
 !**/.gitkeep
 agent_history.gif
+
+# Guix-specific ignores
+guix/.guix-profile/
+guix/result*
+guix/build-logs/
 
 # Guix-specific ignores
 guix/.guix-profile/
