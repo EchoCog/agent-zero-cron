@@ -6,7 +6,6 @@ This test verifies the integration without requiring external dependencies.
 
 import sys
 import os
-sys.path.append('.')
 
 def test_inngest_client():
     """Test Inngest client initialization and fallback behavior."""
