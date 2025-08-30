@@ -6,8 +6,6 @@ Simplified test for core cognitive grammar functionality without dependencies.
 import sys
 import os
 import json
-sys.path.append('.')
-
 def test_cognitive_grammar_core():
     """Test core cognitive grammar functionality."""
     print("Testing Core Cognitive Grammar...")

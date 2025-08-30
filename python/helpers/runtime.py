@@ -91,7 +91,7 @@ async def handle_rfc(rfc_call: rfc.RFCCall):
 def _get_rfc_password() -> str:
     password = dotenv.get_dotenv_value(dotenv.KEY_RFC_PASSWORD)
     if not password:
-        raise Exception("No RFC password configured. Please set the RFC Password in Development Settings to enable remote function calls between Agent Zero instances.")
+        raise RFCConfigurationError("No RFC password configured. Please set the RFC Password in Development Settings to enable remote function calls between Agent Zero instances.")
     return password
 
 

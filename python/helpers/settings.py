@@ -712,8 +712,10 @@ def convert_in(settings: dict) -> Settings:
                         # Validate port ranges for RFC ports
                         try:
                             port_value = int(field["value"])
-                            if port_value < 1024 or port_value > 65535:
-                                raise ValueError(f"Port {field['id']} must be between 1024 and 65535")
+                            if port_value < 1024:
+                                raise ValueError(f"Port {field['id']} must be >= 1024 (ports 0-1023 are reserved for privileged users)")
+                            if port_value > 65535:
+                                raise ValueError(f"Port {field['id']} must be <= 65535")
                             current[field["id"]] = port_value
                         except (ValueError, TypeError) as e:
                             raise ValueError(f"Invalid port value for {field['id']}: {field['value']}") from e
