@@ -167,3 +167,19 @@ def set_runtime_config(config: AgentConfig, set: settings.Settings):
     #     dman.start_container()
 
     # config.code_exec_ssh_pass = asyncio.run(rfc_exchange.get_root_password())
+
+
+# Backward compatibility functions for legacy code
+def get_initialized_agent_config():
+    """
+    Legacy function for backward compatibility.
+    Delegates to the new initialize() function.
+    """
+    return initialize()
+
+
+def initialize_agent():
+    """
+    Alternative name for initialize function for backward compatibility.
+    """
+    return initialize()
