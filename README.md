@@ -12,7 +12,9 @@
 [Hacking Edition](#hacking-edition) •
 [How to update](./docs/installation.md#how-to-update-agent-zero) •
 [Documentation](./docs/README.md) •
-[Usage](./docs/usage.md)
+[Usage](./docs/usage.md) •
+[Development Roadmap](./DEVELOPMENT_ROADMAP.md) •
+[Project Status](./PROJECT_STATUS.md)
 
 </div>
 
@@ -262,6 +264,27 @@ See [guix/README.md](./guix/README.md) for detailed Guix deployment documentatio
 - **Extensions Framework**
 - **Reflection Prompts**
 - **Bug Fixes**
+
+## 🚀 Development & Roadmap
+
+Agent Zero is actively developed with a focus on stability, performance, and community-driven features. 
+
+### Current Development Status
+- **Phase 1**: Stability & Performance improvements (In Progress)
+- **Focus Areas**: Build optimization, error handling, testing coverage
+- **Community**: Open for contributions and feedback
+
+### Key Documents
+- **[📋 Development Roadmap](./DEVELOPMENT_ROADMAP.md)**: Complete strategic development plan
+- **[⚡ Next Steps](./NEXT_STEPS.md)**: Immediate action items and priorities  
+- **[📊 Project Status](./PROJECT_STATUS.md)**: Live progress tracking and metrics
+- **[✅ TODO List](./TODO.md)**: Detailed task breakdown
+
+### Get Involved
+- **Contributors Welcome**: Check our [contribution guide](./docs/contribution.md)
+- **Bug Reports**: Help us identify and fix issues
+- **Feature Requests**: Share your ideas for new capabilities
+- **Testing**: Help test across different environments
 
 ## 🤝 Community and Support
 
