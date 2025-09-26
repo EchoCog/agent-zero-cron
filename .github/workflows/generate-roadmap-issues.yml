@@ -1,0 +1,131 @@
+name: Generate Issues from Roadmap
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_issues:
+        description: 'Maximum number of issues to create'
+        required: false
+        default: '5'
+        type: string
+      priority_filter:
+        description: 'Priority filter (all, high, medium, low)'
+        required: false
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - high
+        - medium
+        - low
+  schedule:
+    # Run weekly on Mondays at 9 AM UTC
+    - cron: '0 9 * * 1'
+
+jobs:
+  generate-issues:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+      
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+        
+    - name: Parse roadmap and generate issues data
+      id: parse_roadmap
+      run: |
+        python roadmap_parser.py DEVELOPMENT_ROADMAP.md > roadmap_issues.json
+        echo "roadmap_data=$(cat roadmap_issues.json)" >> $GITHUB_OUTPUT
+        
+    - name: Create GitHub Issues
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          const roadmapData = JSON.parse(fs.readFileSync('roadmap_issues.json', 'utf8'));
+          
+          // Configuration
+          const maxIssues = parseInt('${{ github.event.inputs.max_issues || 5 }}');
+          const priorityFilter = '${{ github.event.inputs.priority_filter || "all" }}';
+          
+          console.log(`Creating up to ${maxIssues} issues with priority filter: ${priorityFilter}`);
+          console.log(`Found ${roadmapData.incomplete_tasks} incomplete tasks in roadmap`);
+          
+          // Filter issues by priority if specified
+          let issuesToCreate = roadmapData.issues;
+          if (priorityFilter !== 'all') {
+            issuesToCreate = roadmapData.issues.filter(issue => 
+              issue.labels.some(label => label === `priority:${priorityFilter}`)
+            );
+          }
+          
+          // Limit number of issues
+          issuesToCreate = issuesToCreate.slice(0, maxIssues);
+          
+          // Check for existing issues to avoid duplicates
+          const existingIssues = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            labels: 'roadmap-generated',
+            state: 'open'
+          });
+          
+          const existingTitles = new Set(existingIssues.data.map(issue => issue.title));
+          
+          let createdCount = 0;
+          let skippedCount = 0;
+          
+          for (const issueData of issuesToCreate) {
+            if (existingTitles.has(issueData.title)) {
+              console.log(`Skipping duplicate issue: ${issueData.title}`);
+              skippedCount++;
+              continue;
+            }
+            
+            try {
+              const response = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: issueData.title,
+                body: issueData.body,
+                labels: issueData.labels
+              });
+              
+              console.log(`Created issue #${response.data.number}: ${issueData.title}`);
+              createdCount++;
+              
+              // Add a small delay to avoid rate limiting
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              
+            } catch (error) {
+              console.error(`Failed to create issue "${issueData.title}":`, error.message);
+            }
+          }
+          
+          console.log(`\nSummary:`);
+          console.log(`- Created: ${createdCount} issues`);
+          console.log(`- Skipped (duplicates): ${skippedCount} issues`);
+          console.log(`- Total incomplete tasks in roadmap: ${roadmapData.incomplete_tasks}`);
+          
+          // Create a summary comment on the workflow run
+          const summaryBody = `## Roadmap Issues Generation Summary
+          
+          - **Created**: ${createdCount} new issues
+          - **Skipped**: ${skippedCount} duplicate issues  
+          - **Priority Filter**: ${priorityFilter}
+          - **Total Incomplete Tasks**: ${roadmapData.incomplete_tasks}
+          
+          All created issues are tagged with \`roadmap-generated\` label for easy tracking.`;
+          
+          // If we're in a manual run, add a comment to summarize
+          if (context.eventName === 'workflow_dispatch') {
+            core.notice(summaryBody);
+          }
